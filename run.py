@@ -25,6 +25,11 @@ def main():
         action="store_true",
         help="Forces repeated runs, even for long operations (> 10s)",
     )
+    parser.add_argument(
+        "-t",
+        action="store_true",
+        help="Run only on test_input",
+    )
     args = parser.parse_args()
 
     day_folder_pattern = r"Day [0-9][0-9]"
@@ -35,22 +40,26 @@ def main():
         folders = filter(lambda day: int(day[-2:]) in (args.days), folders)
 
     for day in folders:
-        run_day_folder(day, args.n, args.f)
+        run_day_folder(day, args.n, args.f, args.t)
 
 
-def run_day_folder(folder: str, n: int = 1, force: bool = False):
+def run_day_folder(folder: str, n: int = 1, force: bool = False, test_only: bool = False):
     runtimes = []
     runtimes_info = ""
 
     for part in (1, 2):
-        input_files = [
-            [Path(folder) / "test_input.txt", True],
-            [Path(folder) / "input.txt", False],
-        ]
+        input_files = []
+
+        if part == 2 and (Path(folder) / "test_input_2.txt").exists():
+            input_files.append([Path(folder) / "test_input_2.txt", True])
+        else:
+            input_files.append([Path(folder) / "test_input.txt", True])
+
+        if not test_only:
+            input_files.append([Path(folder) / "input.txt", False])
 
         # Account for possible differing input between parts
-        if part == 2 and (Path(folder) / "test_input_2.txt").exists():
-            input_files[0] = [Path(folder) / "test_input_2.txt", True]
+        
 
         for input_file in input_files:
             is_implemented = True
